@@ -7,6 +7,15 @@ def read_file(file_path):
 
     with open(file_path) as f:
         return f.read()
+    
+def load_common_words(file_path):
+    """Load common words from a file into a set."""
+    with open(file_path, 'r') as f:
+        common_words = set(word.strip() for word in f)
+    return common_words
+
+# Usage
+common_words = load_common_words('common_words.txt')
 
 def count_words(file_contents):
     """Return the number of words in the text."""
@@ -21,15 +30,29 @@ def count_letters(file_contents):
     counter = collections.Counter(processed_file_contents)
     return dict(counter)
 
+def count_word_frequency(file_contents):
+    """Count the frequency of each word in the text, excluding common words."""
+
+    words = file_contents.lower().split()
+    words = [word for word in words if word not in common_words]
+    counter = collections.Counter(words)
+
+    # Filter the counter dictionary to only include words that were found more than once
+    counter = {word: count for word, count in counter.items() if count > 1}
+    
+    return dict(counter)
+
 def generate_text_report(file_path):
     """Generate a report of word and character counts from a file."""
 
     file_contents = read_file(file_path)
     word_count = count_words(file_contents)
     char_dict = count_letters(file_contents)
+    word_freq_dict = count_word_frequency(file_contents)
 
-    # Sort the dictionary by highest character count
+# Sort the dictionaries by highest count
     sorted_char_list = sorted(char_dict.items(), key=lambda x:x[1], reverse=True)
+    sorted_word_freq_list = sorted(word_freq_dict.items(), key=lambda x:x[1], reverse=True)
 
     # Header format for the report
     print(f'--- Begin report of {file_path} ---\n')
@@ -38,6 +61,10 @@ def generate_text_report(file_path):
     # Step through the character dictionary, print the results
     for char, count in sorted_char_list:
         print(f'The "{char}" character was found {count} times.')
+
+    # Step through the word frequency dictionary, print the results
+    for word, freq in sorted_word_freq_list:
+        print(f'The word "{word}" was found {freq} times.')
     
     # Footer format for the reports
     print(f'\n--- End report ---')
